@@ -1,184 +1,244 @@
-import React, { Component } from "react";
-import {
-  View,
-  Animated,
-  Text,
-  StyleSheet,
-  Image,
-  Dimensions,
-} from "react-native";
+import React, { Component } from 'react'
+import { View, Text, TouchableOpacity, StyleSheet, Image, Animated, Dimensions, Alert } from 'react-native'
 
-const { width, height } = Dimensions.get("screen");
+const WIDTH = Dimensions.get('screen').width
+const HEIGHT = Dimensions.get('screen').height
 
-class Toast extends Component {
-  static toastInstance;
+class Popup extends Component {
+	static popupInstance
 
-  static show({ ...config }) {
-    this.toastInstance.start(config);
-  }
+	static show({ ...config }) {
+		this.popupInstance.start(config)
+	}
 
-  static hide() {
-    this.toastInstance.hideToast();
-  }
+	static hide() {
+		this.popupInstance.hidePopup()
+	}
 
-  state = {
-    toast: new Animated.Value(height),
-    time: new Animated.Value(this.getPercentage(90, width)),
-    // currentTime: 0,
-    // currentPercentage: this.getPercentage(90, width),
-  };
+	state = {
+		positionView: new Animated.Value(HEIGHT),
+		opacity: new Animated.Value(0),
+		positionPopup: new Animated.Value(HEIGHT),
+		popupHeight: 0
+	}
 
-  start({ ...config }) {
-    this.setState({
-      title: config.title,
-      text: config.text,
-      color: config.color,
-      icon: config.icon,
-      timing: config.timing,
-      type: config.type,
-    });
+	start({ ...config }) {
+		this.setState({
+			title: config.title,
+			type: config.type,
+			icon: config.icon !== undefined ? config.icon : false,
+			textBody: config.textBody,
+			button: config.button !== undefined ? config.button : true,
+			buttonText: config.buttonText || 'Ok',
+			callback: config.callback !== undefined ? config.callback : this.defaultCallback(),
+			background: config.background || 'rgba(0, 0, 0, 0.5)',
+			timing: config.timing,
+			autoClose: config.autoClose !== undefined ? config.autoClose : false
+		})
 
-    Animated.spring(this.state.toast, {
-      toValue: height - 150,
-      bounciness: 15,
-      useNativeDriver: true,
-    }).start();
+		Animated.sequence([
+			Animated.timing(this.state.positionView, {
+				toValue: 0,
+				duration: 100,
+				useNativeDriver: false
+			}),
+			Animated.timing(this.state.opacity, {
+				toValue: 1,
+				duration: 300,
+				useNativeDriver: false
+			}),
+			Animated.spring(this.state.positionPopup, {
+				toValue: (HEIGHT / 2) - (this.state.popupHeight / 2),
+				bounciness: 15,
+				useNativeDriver: true
+			})
+		]).start()
 
-    const duration = config.timing > 0 ? config.timing : 5000;
+		if (config.autoClose && config.timing !== 0) {
+			const duration = config.timing > 0 ? config.timing : 5000
+			setTimeout(() => {
+				this.hidePopup()
+			}, duration)
+		}
+	}
 
-    // setInterval(() => {
+	hidePopup() {
+		Animated.sequence([
+			Animated.timing(this.state.positionPopup, {
+				toValue: HEIGHT,
+				duration: 250,
+				useNativeDriver: true
+			}),
+			Animated.timing(this.state.opacity, {
+				toValue: 0,
+				duration: 300,
+				useNativeDriver: false
+			}),
+			Animated.timing(this.state.positionView, {
+				toValue: HEIGHT,
+				duration: 100,
+				useNativeDriver: false
+			})
+		]).start()
+	}
 
-    // }, )
+	defaultCallback() {
+		return Alert.alert(
+			'Callback!',
+			'Callback complete!',
+			[
+				{ text: 'Ok', onPress: () => this.hidePopup() }
+			]
+		)
+	}
 
-    setTimeout(() => {
-      // this.runTiming();
-      // this.runCurrentTime();
-      this.hideToast();
-    }, duration);
-  }
+	handleImage(type) {
+		switch (type) {
+			case 'Success': return require('../../assets/Success.png')
+			case 'Danger': return require('../../assets/Error.png')
+			case 'Warning': return require('../../assets/Warning.png')
+		}
+	}
 
-  runCurrentTime() {
-    let interval = setInterval(() => {
-      if (this.state.currentTime >= 5) {
-        clearInterval(interval);
-      } else {
-        this.setState({ currentTime: this.state.currentTime + 1 });
-        this.runTiming();
-      }
-    }, 1000);
-  }
+	render() {
+		const { title, type, textBody, button, buttonText, callback, background } = this.state
+		let el = null;
+		if (this.state.button) {
+			el = <TouchableOpacity style={[styles.Button, styles[type]]} onPress={callback}>
+				<Text style={[styles.TextButton,{		color:  type==='Success'?'#fff':'#333',}]}>{buttonText}</Text>
+			</TouchableOpacity>
+		}
+		else {
+			el = <Text></Text>
+		}
+		return (
+			<Animated.View
+				ref={c => this._root = c}
+				style={[styles.Container, {
+					backgroundColor: background || 'transparent',
+					opacity: this.state.opacity,
+					transform: [
+						{ translateY: this.state.positionView }
+					]
+				}]}>
+				<Animated.View
+					onLayout={event => {
+						this.setState({ popupHeight: event.nativeEvent.layout.height })
+					}}
+					style={[styles.Message, {
+						transform: [
+							{ translateY: this.state.positionPopup }
+						]
+					}]}
 
-  runTiming() {
-    Animated.timing(this.state.time, {
-      toValue:
-        this.getPercentage(90, width) -
-        this.getPercentage(90, width) / this.state.currentTime,
-    }).start();
-  }
-
-  hideToast() {
-    Animated.timing(this.state.toast, {
-      toValue: height + 500,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }
-
-  getPercentage(percentage, value) {
-    return (percentage * value) / 100;
-  }
-
-  render() {
-    const { title, text, icon, color } = this.state;
-    return (
-      <Animated.View
-        ref={(c) => (this._root = c)}
-        style={[
-          styles.toast,
-          {
-            backgroundColor: color,
-            transform: [{ translateY: this.state.toast }],
-          },
-        ]}
-      >
-        {icon && <View style={[styles.iconStatus]}>{icon}</View>}
-        <View style={styles.content}>
-          <Text style={[styles.title]}>{title}</Text>
-          <Text style={styles.subtitle}>{text}</Text>
-        </View>
-
-        <Animated.View
-          style={[
-            styles.timing,
-            {
-              width: this.state.time,
-            },
-          ]}
-        />
-      </Animated.View>
-    );
-  }
+				>
+					<View style={styles.Header} />
+					{
+						this.state.icon ? (this.state.icon) :
+							<Image
+								source={this.handleImage(type)}
+								resizeMode="contain"
+								style={styles.Image}
+							/>
+					}
+					<View style={styles.Content}>
+						<Text style={styles.Title}>{title}</Text>
+						<Text style={styles.Desc}>{textBody}</Text>
+						{el}
+					</View>
+				</Animated.View>
+			</Animated.View>
+		)
+	}
 }
 
 const styles = StyleSheet.create({
-  toast: {
-    position: "absolute",
-    width: "90%",
-    alignSelf: "center",
-    borderRadius: 5,
-    minHeight: 100,
-    shadowColor: "#ccc",
-    alignItems: "center",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    flexDirection: "row",
-  },
-  timing: {
-    borderBottomRightRadius: 5,
-    borderBottomLeftRadius: 5,
-    height: 10,
-    width: "100%",
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-  },
-  content: {
-    flex: 1,
-    paddingLeft: 20,
-    paddingRight: 20,
-  },
-  title: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  subtitle: {
-    marginTop: 5,
-    fontWeight: "300",
-    fontSize: 13,
-    color: "#fff",
-    fontWeight: "400",
-  },
-  img: {
-    resizeMode: "contain",
-    width: 20,
-    height: 20,
-  },
-  iconStatus: {
-    width: 40,
-    height: 40,
-    // backgroundColor: '#fff',
-    borderRadius: 50,
-    marginLeft: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
+	Container: {
+		position: 'absolute',
+		zIndex: 99999,
+		width: WIDTH,
+		height: HEIGHT,
+		backgroundColor: 'rgba(0, 0, 0, 0.5)',
+		alignItems: 'center',
+		top: 0,
+		left: 0,
 
-export default Toast;
+	},
+	Message: {
+		maxWidth: 350,
+		minWidth: 200,
+		// maxHeight: 2500,
+		backgroundColor: '#fff',
+		borderRadius: 4,
+		alignItems: 'center',
+		overflow: 'hidden',
+		position: 'absolute',
+		padding:16
+
+	},
+	Content: {
+		// padding: 20,
+		marginTop:8,
+		alignItems: 'center',
+
+	},
+	Header: {
+		// height: 230,
+		// width: 230,
+		// backgroundColor: '#FBFBFB',
+		borderRadius: 100,
+		// marginTop: -120
+	},
+	Image: {
+		width: 150,
+		height: 80,
+		position: 'absolute',
+		top: 20
+	},
+	Title: {
+		fontWeight: 'bold',
+		fontSize: 18,
+		color: '#333'
+	},
+	Desc: {
+		textAlign: 'center',
+		color: '#666',
+		marginTop: 10
+	},
+	Button: {
+		borderRadius: 50,
+		height: 40,
+		width: 130,
+		justifyContent: 'center',
+		alignItems: 'center',
+		marginTop: 30
+	},
+	TextButton: {
+
+		fontWeight: 'bold'
+	},
+	Success: {
+		backgroundColor: '#4ABECE',
+		borderRadius:8,
+		color:'#fff'
+	},
+	Danger: {
+		backgroundColor: '#fdebeb',
+		borderWidth:1,
+		borderRadius:8,
+		borderColor:'#f89b9b',
+	},
+	Warning: {
+		backgroundColor: '#fbd10d',
+		shadowColor: "#fbd10d",
+		shadowOffset: {
+			width: 0,
+			height: 5,
+		},
+		shadowOpacity: 0.36,
+		shadowRadius: 6.68,
+		elevation: 11
+	}
+})
+
+export default Popup
