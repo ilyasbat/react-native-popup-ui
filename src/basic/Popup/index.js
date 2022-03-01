@@ -105,7 +105,7 @@ class Popup extends Component {
 		let el = null;
 		if (this.state.button) {
 			el = <TouchableOpacity style={[styles.Button, styles[type]]} onPress={callback}>
-				<Text style={styles.TextButton}>{buttonText}</Text>
+				<Text style={[styles.TextButton,{		color:  type==='Success'?'#fff':'#333',}]}>{buttonText}</Text>
 			</TouchableOpacity>
 		}
 		else {
@@ -161,28 +161,33 @@ const styles = StyleSheet.create({
 		backgroundColor: 'rgba(0, 0, 0, 0.5)',
 		alignItems: 'center',
 		top: 0,
-		left: 0
+		left: 0,
+
 	},
 	Message: {
-		maxWidth: 300,
-		width: 230,
-		minHeight: 300,
+		maxWidth: 350,
+		minWidth: 200,
+		// maxHeight: 2500,
 		backgroundColor: '#fff',
-		borderRadius: 30,
+		borderRadius: 4,
 		alignItems: 'center',
 		overflow: 'hidden',
 		position: 'absolute',
+		padding:16
+
 	},
 	Content: {
-		padding: 20,
-		alignItems: 'center'
+		// padding: 20,
+		marginTop:8,
+		alignItems: 'center',
+
 	},
 	Header: {
-		height: 230,
-		width: 230,
-		backgroundColor: '#FBFBFB',
+		// height: 230,
+		// width: 230,
+		// backgroundColor: '#FBFBFB',
 		borderRadius: 100,
-		marginTop: -120
+		// marginTop: -120
 	},
 	Image: {
 		width: 150,
@@ -209,30 +214,19 @@ const styles = StyleSheet.create({
 		marginTop: 30
 	},
 	TextButton: {
-		color: '#fff',
+
 		fontWeight: 'bold'
 	},
 	Success: {
-		backgroundColor: '#AAF577',
-		shadowColor: "#AAF577",
-		shadowOffset: {
-			width: 0,
-			height: 5,
-		},
-		shadowOpacity: 0.36,
-		shadowRadius: 6.68,
-		elevation: 11
+		backgroundColor: '#4ABECE',
+		borderRadius:8,
+		color:'#fff'
 	},
 	Danger: {
-		backgroundColor: '#F29091',
-		shadowColor: "#F29091",
-		shadowOffset: {
-			width: 0,
-			height: 5,
-		},
-		shadowOpacity: 0.36,
-		shadowRadius: 6.68,
-		elevation: 11
+		backgroundColor: '#fdebeb',
+		borderWidth:1,
+		borderRadius:8,
+		borderColor:'#f89b9b',
 	},
 	Warning: {
 		backgroundColor: '#fbd10d',
