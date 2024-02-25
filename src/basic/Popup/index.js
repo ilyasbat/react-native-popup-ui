@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, Image, Animated, Dimensions, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Image, Animated, Dimensions } from 'react-native'
 
 const WIDTH = Dimensions.get('screen').width
 const HEIGHT = Dimensions.get('screen').height
@@ -29,8 +29,11 @@ class Popup extends Component {
 			icon: config.icon !== undefined ? config.icon : false,
 			textBody: config.textBody,
 			button: config.button !== undefined ? config.button : true,
+			button2: config.button2 !== undefined ? config.button2 : false,
 			buttonText: config.buttonText || 'Ok',
+			buttonText2: config.buttonText2 || 'No',
 			callback: config.callback !== undefined ? config.callback : this.defaultCallback(),
+			callback2: config.callback2 !== undefined ? config.callback2 : this.defaultCallback(),
 			background: config.background || 'rgba(0, 0, 0, 0.5)',
 			timing: config.timing,
 			autoClose: config.autoClose !== undefined ? config.autoClose : false
@@ -83,13 +86,7 @@ class Popup extends Component {
 	}
 
 	defaultCallback() {
-		return Alert.alert(
-			'Callback!',
-			'Callback complete!',
-			[
-				{ text: 'Ok', onPress: () => this.hidePopup() }
-			]
-		)
+	console.log('default callback')
 	}
 
 	handleImage(type) {
@@ -101,12 +98,22 @@ class Popup extends Component {
 	}
 
 	render() {
-		const { title, type, textBody, button, buttonText, callback, background } = this.state
+			
+		const { title, type, textBody, button, buttonText, callback, background,callback2,buttonText2 } = this.state
 		let el = null;
 		if (this.state.button) {
+			if (!this.state.button2) {
 			el = <TouchableOpacity style={[styles.Button, styles[type]]} onPress={callback}>
-				<Text style={[styles.TextButton,{		color:  type==='Success'?'#fff':'#333',}]}>{buttonText}</Text>
+				<Text style={[styles.TextButton,{color:  type==='Success'?'#fff':'#333'}]}>{buttonText}</Text>
 			</TouchableOpacity>
+			}
+			else{
+				el = <View style={styles.TwoButtonView}><TouchableOpacity style={[styles.Button, styles[type]]} onPress={callback}>
+				<Text style={[styles.TextButton,{color:  type==='Success'?'#fff':'#333'}]}>{buttonText}</Text>
+				</TouchableOpacity><TouchableOpacity style={[styles.Button, styles[type],{backgroundColor:'#fdebeb'}]} onPress={callback2}>
+				<Text style={[styles.TextButton,{color:  type==='Success'?'#fff':'#333'}]}>{buttonText2}</Text>
+				</TouchableOpacity></View>
+			}
 		}
 		else {
 			el = <Text></Text>
@@ -130,7 +137,6 @@ class Popup extends Component {
 							{ translateY: this.state.positionPopup }
 						]
 					}]}
-
 				>
 					<View style={styles.Header} />
 					{
@@ -211,7 +217,8 @@ const styles = StyleSheet.create({
 		width: 130,
 		justifyContent: 'center',
 		alignItems: 'center',
-		marginTop: 30
+		marginTop: 30,
+		marginHorizontal:10
 	},
 	TextButton: {
 
@@ -228,16 +235,14 @@ const styles = StyleSheet.create({
 		borderRadius:8,
 		borderColor:'#f89b9b',
 	},
+	TwoButtonView:{
+		flex:1,
+		flexDirection:'row',
+		justifyContent:'space-between'
+	},
 	Warning: {
 		backgroundColor: '#fbd10d',
-		shadowColor: "#fbd10d",
-		shadowOffset: {
-			width: 0,
-			height: 5,
-		},
-		shadowOpacity: 0.36,
-		shadowRadius: 6.68,
-		elevation: 11
+		
 	}
 })
 
