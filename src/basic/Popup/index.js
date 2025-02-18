@@ -19,8 +19,7 @@ class Popup extends Component {
 		positionView: new Animated.Value(HEIGHT),
 		opacity: new Animated.Value(0),
 		positionPopup: new Animated.Value(HEIGHT),
-		popupHeight: 0,
-
+		popupHeight: 0
 	}
 
 	start({ ...config }) {
@@ -37,8 +36,7 @@ class Popup extends Component {
 			callback2: config.callback2 !== undefined ? config.callback2 : this.defaultCallback(),
 			background: config.background || 'rgba(0, 0, 0, 0.5)',
 			timing: config.timing,
-			autoClose: config.autoClose !== undefined ? config.autoClose : false,
-
+			autoClose: config.autoClose !== undefined ? config.autoClose : false
 		})
 
 		Animated.sequence([
@@ -100,9 +98,8 @@ class Popup extends Component {
 	}
 
 	render() {
-
+			
 		const { title, type, textBody, button, buttonText, callback, background,callback2,buttonText2 } = this.state
-
 		let el = null;
 		if (this.state.button) {
 			if (!this.state.button2) {
@@ -114,7 +111,7 @@ class Popup extends Component {
 				el = <View style={styles.TwoButtonView}><TouchableOpacity style={[styles.Button, styles[type]]} onPress={callback}>
 				<Text style={[styles.TextButton,{color:  type==='Success'?'#fff':'#333'}]}>{buttonText}</Text>
 				</TouchableOpacity><TouchableOpacity style={[styles.Button, styles[type],{backgroundColor:'#fdebeb'}]} onPress={callback2}>
-				<Text style={[styles.TextButton,{color:  type==='Success'?'#fff':'#333'}]}>{buttonText2} </Text>
+				<Text style={[styles.TextButton,{color:  type==='Success'?'#fff':'#333'}]}>{buttonText2}</Text>
 				</TouchableOpacity></View>
 			}
 		}
@@ -245,7 +242,7 @@ const styles = StyleSheet.create({
 	},
 	Warning: {
 		backgroundColor: '#fbd10d',
-
+		
 	}
 })
 
